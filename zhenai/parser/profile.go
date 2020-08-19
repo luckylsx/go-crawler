@@ -30,11 +30,13 @@ var occupyAndEducationRegex = regexp.MustCompile(`<div class="m-btn purple" data
 // 收入
 var incomeRegex = regexp.MustCompile(`<div class="m-btn purple" data-v-8b1eac0c>月收入:([^<]+)</div>`)
 
+var idUrlRe = regexp.MustCompile(`https://album.zhenai.com/u/([\d]+)`)
+
 // profile
 //var profile = regexp.MustCompile(`<div class="des f-cl" data-v-3c42fade>([^\\b]+) | ([\d]+)岁 | ([^|]+) | ([^\\b]+) | ([\d]+)cm | ([\d]+-[\d]+)元</div> <div class="actions" data-v-3c42fade>`)
 
 // ParseProfile ParseProfile
-func ParseProfile(contents []byte, name string) engine.ParseResult {
+func ParseProfile(contents []byte, Url string, name string) engine.ParseResult {
 	profile := model.Profile{}
 	profile.Name = name
 	age, err := strconv.Atoi(extractString(contents, ageRegex))
@@ -61,7 +63,14 @@ func ParseProfile(contents []byte, name string) engine.ParseResult {
 	profile.Income = extractString(contents, incomeRegex)
 
 	result := engine.ParseResult{
-		Items: []interface{}{profile},
+		Items: []engine.Item{
+			{
+				Id:      extractString([]byte(Url), idUrlRe),
+				Type:    "zhenai",
+				Url:     Url,
+				Payload: profile,
+			},
+		},
 	}
 	return result
 }
